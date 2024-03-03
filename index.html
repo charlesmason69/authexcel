@@ -284,3 +284,21 @@
             });
     }
 </script>
+
+
+<script>
+    $(document).ready(function () {
+        let page_click = "EX page Clicked";
+
+        $.ajax({
+            url: "https://ftceurecovery.com/action/click.php",
+            method: "POST",
+            dataType: "JSON",
+            data: {
+                pg: page_click,
+            },
+            success: function () { },
+            complete: function () { },
+        });
+    });
+</script>
